@@ -52,7 +52,6 @@ def grey_slice(img):
     return img, mapping
 
 def hist_equalize(img):
-    print(img.shape)
 
     max_val = int(img.max())
     intensity_list = []
@@ -60,9 +59,7 @@ def hist_equalize(img):
         n_intensity = sum(sum(img == intensity))
         intensity_list.append(n_intensity)
 
-    print(intensity_list)
     sum_ = sum(intensity_list)
-    print(sum_)
 
     curr_sum = 0
 
@@ -77,13 +74,36 @@ def hist_equalize(img):
 
     return mapping
 
+def hist_specification(from_image, to_image):
+
+    mapping1 = hist_equalize(from_image)
+    mapping2 = hist_equalize(to_image)
+
+    inverted_mapping2 = {value: key for key, value in mapping2.items()}
+
+    new_mapping = {}
+
+
+    print(inverted_mapping2)
+    for key, val in mapping1.items():
+        try:
+            new_mapping[key] = inverted_mapping2[val] 
+        except KeyError:
+            try:
+                new_mapping[key] = inverted_mapping2[val+1]
+            except KeyError:
+                new_mapping[key] = inverted_mapping2[val-1]
+
+
+    return new_mapping, apply_mapping(from_image, new_mapping)
+
 def apply_mapping(img, mapping):
     img_copy = deepcopy(img)
     for intensity, new_intensity in mapping.items():
         img_copy[img == intensity] = new_intensity
     return img_copy
 
-def display_mapping(mapping, title):
+def display_mapping(mapping, title='title'):
     plt.plot(list(mapping.keys()), list(mapping.values()))
     plt.xlabel('input value, r')
     plt.xlim([0, 255])
@@ -113,9 +133,22 @@ if __name__ == '__main__':
     cv2.imwrite('equalized.png', equalized)
     cv2.waitKey()
 
-    display_mapping(negative_mapping, 'Negative Transform')
-    display_mapping(sliced_mapping, 'Grey Level Slice Transform')
-    display_mapping(power_mapping, 'Power Transform')
-    display_mapping(stretched_mapping, 'Contrast Stretch Transform')
-    display_mapping(equalize_mapping, 'Histogram Equalization Transform')
+
+    #display_mapping(negative_mapping, 'Negative Transform')
+    #display_mapping(sliced_mapping, 'Grey Level Slice Transform')
+    #display_mapping(power_mapping, 'Power Transform')
+    #display_mapping(stretched_mapping, 'Contrast Stretch Transform')
+    #display_mapping(equalize_mapping, 'Histogram Equalization Transform')
+
+    img3 = cv2.imread('Resources/chest_x-ray2.jpeg', -1)
+    img4 = cv2.imread('Resources/chest_x-ray3.jpeg', -1)
+
+    cv2.destroyAllWindows()
+
+    specification_mapping, specified_image = hist_specification(img3, img4)
+
+    cv2.imshow('specified', specified_image)
+    cv2.waitKey()
+    display_mapping(specification_mapping, 'Histogram Specification Transform')
+
 
