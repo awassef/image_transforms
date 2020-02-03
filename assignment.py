@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+from copy import deepcopy
 
 
 def negative(img):
@@ -51,6 +52,7 @@ def grey_slice(img):
     return img, mapping
 
 def hist_equalize(img):
+    print(img.shape)
 
     max_val = int(img.max())
     intensity_list = []
@@ -58,7 +60,9 @@ def hist_equalize(img):
         n_intensity = sum(sum(img == intensity))
         intensity_list.append(n_intensity)
 
+    print(intensity_list)
     sum_ = sum(intensity_list)
+    print(sum_)
 
     curr_sum = 0
 
@@ -74,7 +78,7 @@ def hist_equalize(img):
     return mapping
 
 def apply_mapping(img, mapping):
-    img_copy = img
+    img_copy = deepcopy(img)
     for intensity, new_intensity in mapping.items():
         img_copy[img == intensity] = new_intensity
     return img_copy
